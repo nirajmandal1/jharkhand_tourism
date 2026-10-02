@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { MapPin, Calendar, Users, MessageCircle, AlertTriangle, Search, Menu, X, Phone, Shield, Heart, Star, Camera, Globe } from 'lucide-react';
+import { 
+  MapPin, Calendar, Users, MessageCircle, AlertTriangle, Search, Menu, X, 
+  Phone, Shield, Heart, Star, Camera, Globe, Send, Sparkles, CheckCircle2, 
+  Compass, Share2, ThumbsUp, Clock, ArrowRight, Play
+} from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
@@ -9,9 +13,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
 import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import tourismVideo from "./components/material/video.mp4";
+import deogharImg from "./components/material/deogharImg.jpg";
 
+interface Destination {
+  id: number;
+  name: string;
+  location: string;
+  image: string;
+  rating: number;
+  description: string;
+  category: string;
+  highlights: string[];
+}
 
-const destinations = [
+const destinations: Destination[] = [
   {
     id: 1,
     name: "Netarhat",
@@ -44,11 +59,11 @@ const destinations = [
   },
   {
     id: 4,
-    name: "Deoghar",
+    name: "Deoghar Baidyanath Temple",
     location: "Deoghar, Jharkhand",
-    image: "https://www.shutterstock.com/shutterstock/photos/2333777199/display_1500/stock-photo-deoghar-jharkhand-india-march-th-baba-dham-temple-dedicated-to-lord-shiva-2333777199.jpg",
+    image: deogharImg,
     rating: 4.7,
-    description: "Sacred city with Baidyanath Temple, one of the 12 Jyotirlingas",
+    description: "Sacred city with Baidyanath Temple, one of the 12 Jyotirlingas in India",
     category: "Religious",
     highlights: ["Baidyanath Temple", "Spiritual significance", "Cultural heritage"]
   }
@@ -102,32 +117,36 @@ const culturalItems = [
   }
 ];
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [chatbotOpen, setChatbotOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+const navigation = [
+  { name: 'Home', id: 'home', icon: MapPin },
+  { name: 'Destinations', id: 'destinations', icon: MapPin },
+  { name: 'Virtual Tours', id: 'virtual-tours', icon: Camera },
+  { name: 'Trip Planner', id: 'trip-planner', icon: Calendar },
+  { name: 'Culture & Food', id: 'culture', icon: Heart },
+  { name: 'Events', id: 'events', icon: Calendar },
+  { name: 'Community', id: 'community', icon: Users },
+  { name: 'Login', id: 'auth', icon: Users }
+];
 
-  const navigation = [
-    { name: 'Home', id: 'home', icon: MapPin },
-    { name: 'Destinations', id: 'destinations', icon: MapPin },
-    { name: 'Virtual Tours', id: 'virtual-tours', icon: Camera },
-    { name: 'Trip Planner', id: 'trip-planner', icon: Calendar },
-    { name: 'Culture & Food', id: 'culture', icon: Heart },
-    { name: 'Events', id: 'events', icon: Calendar },
-    { name: 'Community', id: 'community', icon: Users },
-    { name: 'Login', id: 'auth', icon: Users }
-  ];
+/* --- TOP-LEVEL COMPONENTS TO PRESERVE FOCUS & STATE --- */
 
-  const Header = () => (
+interface HeaderProps {
+  currentPage: string;
+  setCurrentPage: (page: string) => void;
+  mobileMenuOpen: boolean;
+  setMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+function Header({ currentPage, setCurrentPage, mobileMenuOpen, setMobileMenuOpen }: HeaderProps) {
+  return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-2">
-            {/* <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-amber-600 rounded-lg flex items-center justify-center">
-              <Globe className="w-5 h-5 text-white" />
-            </div> */}
-            <img src="logo1.png"  alt="App Logo" className="w-9 h-9 rounded-lg" />
+          <div 
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => setCurrentPage('home')}
+          >
+            <img src="/logo1.png" alt="App Logo" className="w-9 h-9 rounded-lg object-contain" />
             <span className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-amber-700 bg-clip-text text-transparent">
               Jh Tourism
             </span>
@@ -190,8 +209,21 @@ function App() {
       </div>
     </header>
   );
+}
 
-  const HomePage = () => (
+interface HomePageProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  setCurrentPage: (page: string) => void;
+}
+
+function HomePage({ searchQuery, setSearchQuery, setCurrentPage }: HomePageProps) {
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage('destinations');
+  };
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
@@ -213,17 +245,20 @@ function App() {
           </p>
           
           {/* Search Bar */}
-          <div className="flex max-w-md mx-auto mb-8">
+          <form onSubmit={handleSearchSubmit} className="flex max-w-md mx-auto mb-8">
             <Input
-              placeholder="Search destinations, events, experiences..."
+              placeholder="Search destinations, events, waterfalls..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="rounded-r-none bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/70"
+              className="rounded-r-none bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/70 focus:bg-white/30"
             />
-            <Button className="rounded-l-none bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
+            <Button 
+              type="submit"
+              className="rounded-l-none bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700"
+            >
               <Search className="w-4 h-4" />
             </Button>
-          </div>
+          </form>
 
           {/* Quick Actions */}
           <div className="flex flex-wrap justify-center gap-4">
@@ -312,70 +347,158 @@ function App() {
       </section>
     </div>
   );
+}
 
-  const DestinationsPage = () => (
+interface DestinationsPageProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  setCurrentPage: (page: string) => void;
+}
+
+function DestinationsPage({ searchQuery, setSearchQuery, setCurrentPage }: DestinationsPageProps) {
+  const filtered = destinations.filter((dest) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      dest.name.toLowerCase().includes(q) ||
+      dest.location.toLowerCase().includes(q) ||
+      dest.category.toLowerCase().includes(q) ||
+      dest.description.toLowerCase().includes(q)
+    );
+  });
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-amber-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-emerald-800 mb-4">Explore Destinations</h1>
           <p className="text-emerald-600 max-w-2xl mx-auto">Discover the hidden gems of Jharkhand's natural beauty and cultural heritage</p>
+          
+          {/* Quick filter search */}
+          <div className="mt-6 max-w-md mx-auto flex items-center">
+            <Input
+              placeholder="Filter by name, city, or category..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-white border-emerald-200"
+            />
+            {searchQuery && (
+              <Button 
+                variant="ghost" 
+                onClick={() => setSearchQuery('')}
+                className="ml-2 text-emerald-700"
+              >
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {destinations.map((destination) => (
-            <Card key={destination.id} className="overflow-hidden border-emerald-100 hover:shadow-xl transition-shadow">
-              <div className="relative h-48">
-                <ImageWithFallback
-                  src={destination.image}
-                  alt={destination.name}
-                  className="w-full h-full object-cover"
-                />
-                <Badge className="absolute top-4 left-4 bg-emerald-600">
-                  {destination.category}
-                </Badge>
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center">
-                  <Star className="w-4 h-4 text-amber-500 fill-current mr-1" />
-                  <span className="text-sm font-medium">{destination.rating}</span>
-                </div>
-              </div>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-emerald-800 mb-2">{destination.name}</h3>
-                <p className="text-emerald-600 text-sm mb-2 flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {destination.location}
-                </p>
-                <p className="text-gray-600 mb-4">{destination.description}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {destination.highlights.map((highlight, index) => (
-                    <Badge key={index} variant="secondary" className="bg-amber-100 text-amber-800">
-                      {highlight}
+        {filtered.length === 0 ? (
+          <div className="text-center py-16 bg-white/60 rounded-xl border border-emerald-100 max-w-lg mx-auto">
+            <Compass className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-emerald-800">No destinations found</h3>
+            <p className="text-emerald-600 text-sm mt-1">Try searching for "Netarhat", "Betla", "Waterfall", or "Deoghar".</p>
+            <Button onClick={() => setSearchQuery('')} className="mt-4 bg-emerald-600 text-white">
+              View All Destinations
+            </Button>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((destination) => (
+              <Card key={destination.id} className="overflow-hidden border-emerald-100 hover:shadow-xl transition-shadow bg-white flex flex-col justify-between">
+                <div>
+                  <div className="relative h-48">
+                    <ImageWithFallback
+                      src={destination.image}
+                      alt={destination.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <Badge className="absolute top-4 left-4 bg-emerald-600 text-white">
+                      {destination.category}
                     </Badge>
-                  ))}
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center shadow-sm">
+                      <Star className="w-4 h-4 text-amber-500 fill-current mr-1" />
+                      <span className="text-sm font-medium">{destination.rating}</span>
+                    </div>
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold text-emerald-800 mb-2">{destination.name}</h3>
+                    <p className="text-emerald-600 text-sm mb-2 flex items-center">
+                      <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {destination.location}
+                    </p>
+                    <p className="text-gray-600 mb-4 text-sm">{destination.description}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {destination.highlights.map((highlight, index) => (
+                        <Badge key={index} variant="secondary" className="bg-amber-100 text-amber-800">
+                          {highlight}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
                 </div>
-                <div className="flex gap-2">
-                  <Button className="flex-1 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
-                    <Camera className="w-4 h-4 mr-2" />
-                    Virtual Tour
-                  </Button>
-                  <Button variant="outline" className="border-emerald-600 text-emerald-600 hover:bg-emerald-50">
-                    <MapPin className="w-4 h-4" />
-                  </Button>
+                <div className="px-6 pb-6">
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => setCurrentPage('virtual-tours')}
+                      className="flex-1 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Virtual Tour
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setCurrentPage('trip-planner')}
+                      className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                      title="Plan Trip to this location"
+                    >
+                      <Calendar className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
+}
 
-  const VirtualToursPage = () => (
+function VirtualToursPage() {
+  const [selectedTour, setSelectedTour] = useState<Destination | null>(null);
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-amber-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-emerald-800 mb-4">Virtual Tours & AR Experiences</h1>
-          <p className="text-emerald-600 max-w-2xl mx-auto">Immerse yourself in Jharkhand's beauty with 360° virtual tours and augmented reality experiences</p>
+          <p className="text-emerald-600 max-w-2xl mx-auto">Immerse yourself in Jharkhand's beauty with video tours, 360° views, and augmented reality experiences</p>
         </div>
+
+        {/* Featured Video Showcase using local tourismVideo */}
+        <Card className="border-emerald-100 overflow-hidden mb-12 shadow-lg">
+          <CardHeader className="bg-emerald-900 text-white py-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center text-white">
+                <Play className="w-5 h-5 mr-2 text-amber-400" />
+                Featured Video Tour: Glimpses of Jharkhand
+              </CardTitle>
+              <Badge className="bg-amber-500 text-emerald-950 font-semibold">Watch in HD</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 bg-black flex justify-center">
+            <video 
+              controls 
+              className="w-full max-h-[500px] object-cover" 
+              src={tourismVideo}
+              poster="https://pbs.twimg.com/media/ET77GGKVAAEZJxu.jpg"
+            >
+              Your browser does not support video playback.
+            </video>
+          </CardContent>
+        </Card>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           <Card className="border-emerald-100">
@@ -384,23 +507,27 @@ function App() {
                 <Globe className="w-5 h-5 mr-2" />
                 360° Virtual Tours
               </CardTitle>
-              <CardDescription>Experience destinations from the comfort of your home</CardDescription>
+              <CardDescription>Click any destination to preview interactive 360° view</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                {destinations.slice(0, 4).map((destination) => (
-                  <div key={destination.id} className="relative group cursor-pointer">
-                    <div className="aspect-square rounded-lg overflow-hidden">
+                {destinations.map((destination) => (
+                  <div 
+                    key={destination.id} 
+                    onClick={() => setSelectedTour(destination)}
+                    className="relative group cursor-pointer overflow-hidden rounded-lg border border-emerald-100 hover:shadow-md transition-all"
+                  >
+                    <div className="aspect-square overflow-hidden">
                       <ImageWithFallback
                         src={destination.image}
                         alt={destination.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg flex items-end p-3">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-3">
                       <span className="text-white text-sm font-medium">{destination.name}</span>
                     </div>
-                    <div className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center">
+                    <div className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm">
                       <Camera className="w-4 h-4 text-emerald-600" />
                     </div>
                   </div>
@@ -415,34 +542,34 @@ function App() {
                 <Camera className="w-5 h-5 mr-2" />
                 AR Cultural Experiences
               </CardTitle>
-              <CardDescription>Interactive augmented reality experiences</CardDescription>
+              <CardDescription>Interactive augmented reality features on your mobile device</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="p-4 bg-emerald-50 rounded-lg flex items-center justify-between">
                   <div>
                     <h4 className="font-medium text-emerald-800">Tribal Art Recognition</h4>
-                    <p className="text-sm text-emerald-600">Point your camera at tribal art to learn its history</p>
+                    <p className="text-sm text-emerald-600">Point your camera at Sohrai and Kohbar tribal art to view history</p>
                   </div>
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                     Try AR
                   </Button>
                 </div>
                 <div className="p-4 bg-amber-50 rounded-lg flex items-center justify-between">
                   <div>
                     <h4 className="font-medium text-amber-800">Wildlife Spotter</h4>
-                    <p className="text-sm text-amber-600">Identify animals and birds in their natural habitat</p>
+                    <p className="text-sm text-amber-600">Identify Betla animals, birds, and flora in real-time</p>
                   </div>
-                  <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
+                  <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
                     Try AR
                   </Button>
                 </div>
                 <div className="p-4 bg-emerald-50 rounded-lg flex items-center justify-between">
                   <div>
                     <h4 className="font-medium text-emerald-800">Historical Timeline</h4>
-                    <p className="text-sm text-emerald-600">Explore historical sites with interactive timelines</p>
+                    <p className="text-sm text-emerald-600">Explore Palamau Fort and Baidyanath Temple with 3D models</p>
                   </div>
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                     Try AR
                   </Button>
                 </div>
@@ -451,6 +578,39 @@ function App() {
           </Card>
         </div>
 
+        {/* Selected Tour Modal */}
+        <Dialog open={!!selectedTour} onOpenChange={(open) => !open && setSelectedTour(null)}>
+          <DialogContent className="sm:max-w-2xl">
+            {selectedTour && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-emerald-800 flex items-center">
+                    <Camera className="w-5 h-5 mr-2" />
+                    360° Virtual Preview: {selectedTour.name}
+                  </DialogTitle>
+                  <DialogDescription>{selectedTour.location}</DialogDescription>
+                </DialogHeader>
+                <div className="relative h-72 w-full rounded-lg overflow-hidden border border-emerald-100">
+                  <ImageWithFallback 
+                    src={selectedTour.image} 
+                    alt={selectedTour.name} 
+                    className="w-full h-full object-cover" 
+                  />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-emerald-900 font-semibold text-sm flex items-center">
+                      <Globe className="w-4 h-4 mr-2 animate-spin text-emerald-600" />
+                      360° Interactive Panorama Loaded
+                    </div>
+                  </div>
+                </div>
+                <div className="p-3 bg-emerald-50 rounded-lg text-sm text-emerald-800">
+                  {selectedTour.description}
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Interactive Map */}
         <Card className="border-emerald-100">
           <CardHeader>
@@ -458,35 +618,94 @@ function App() {
               <MapPin className="w-5 h-5 mr-2" />
               Interactive Tourist Map
             </CardTitle>
-            <CardDescription>Explore Jharkhand with our interactive map featuring all major attractions</CardDescription>
+            <CardDescription>Explore Jharkhand with major attractions, routes, and emergency kiosks</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="bg-emerald-100 rounded-lg p-8 text-center">
-              <MapPin className="w-16 h-16 text-emerald-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-emerald-800 mb-2">Interactive Map Coming Soon</h3>
-              <p className="text-emerald-600 mb-4">Our interactive map will feature real-time navigation, points of interest, and AR markers</p>
-              <Button className="bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
-                Get Notified
-              </Button>
+            <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-8 text-center">
+              <MapPin className="w-16 h-16 text-emerald-600 mx-auto mb-4 animate-bounce" />
+              <h3 className="text-xl font-semibold text-emerald-800 mb-2">Interactive GPS Map of Jharkhand</h3>
+              <p className="text-emerald-600 max-w-xl mx-auto mb-4">
+                View key destinations: Ranchi, Netarhat, Betla National Park, Deoghar, Parasnath Hill, and Hundru Falls with live route calculation.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <Button 
+                  onClick={() => alert("GPS Map coordinates initialized. Navigating to Ranchi hub.")}
+                  className="bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white"
+                >
+                  <Compass className="w-4 h-4 mr-2" />
+                  Open Live Map View
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
   );
+}
 
-  const TripPlannerPage = () => (
+function TripPlannerPage() {
+  const [travelers, setTravelers] = useState('2');
+  const [budget, setBudget] = useState('₹10,000 - ₹25,000');
+  const [accommodation, setAccommodation] = useState('Eco Resorts');
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(['Nature', 'Culture']);
+  const [hasGuide, setHasGuide] = useState(false);
+  const [hasPhotographer, setHasPhotographer] = useState(false);
+  const [itinerary, setItinerary] = useState<Array<{ day: string; title: string; activities: string[] }> | null>(null);
+
+  const toggleInterest = (interest: string) => {
+    setSelectedInterests((prev) => 
+      prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest]
+    );
+  };
+
+  const handleGenerate = () => {
+    setItinerary([
+      {
+        day: "Day 1: Arrival & Waterfalls of Ranchi",
+        title: "Scenic Waterfalls & Cultural Welcome",
+        activities: [
+          "Arrive in Ranchi and check-in to your selected " + accommodation,
+          "Morning visit to spectacular Hundru Falls (320 ft drop)",
+          "Enjoy authentic Dhuska and Ghugni lunch with local artisans",
+          "Evening sunset view at Tagore Hill with tribal handicraft gallery tour"
+        ]
+      },
+      {
+        day: "Day 2: Queen of Chotanagpur (Netarhat)",
+        title: "Pine Forests & Sunrise Points",
+        activities: [
+          "Early drive through lush sal forest valleys to Netarhat",
+          "Explore Magnolia Point for the famous panoramic sunset",
+          "Guided trek through pine forest and Upper Ghaghri falls",
+          hasGuide ? "Personal local guide session: Tribal folklore and history" : "Stargazing at Netarhat plateau"
+        ]
+      },
+      {
+        day: "Day 3: Wildlife Safari & Heritage",
+        title: "Betla Safari & Ancient Fort",
+        activities: [
+          "Morning wildlife jungle safari at Betla National Park",
+          "Spotting elephants, deer, and exotic bird species",
+          "Explore historical Palamau Fort remnants inside the tiger reserve",
+          hasPhotographer ? "Professional photo session completed and delivered" : "Departure with traditional tribal souvenirs"
+        ]
+      }
+    ]);
+  };
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-amber-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-emerald-800 mb-4">AI Trip Planner</h1>
-          <p className="text-emerald-600 max-w-2xl mx-auto">Let our AI create the perfect itinerary based on your preferences and interests</p>
+          <p className="text-emerald-600 max-w-2xl mx-auto">Let our smart planner create an itinerary customized for your interests, budget, and dates</p>
         </div>
 
-        <Card className="border-emerald-100">
+        <Card className="border-emerald-100 mb-8 shadow-md">
           <CardHeader>
             <CardTitle className="text-emerald-800">Plan Your Perfect Trip</CardTitle>
-            <CardDescription>Tell us about your preferences and we'll create a customized itinerary</CardDescription>
+            <CardDescription>Tell us about your preferences and we'll generate your personalized itinerary</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
@@ -494,17 +713,27 @@ function App() {
                 <div>
                   <label className="block text-sm font-medium text-emerald-700 mb-2">Travel Dates</label>
                   <div className="grid grid-cols-2 gap-2">
-                    <Input type="date" className="border-emerald-200" />
-                    <Input type="date" className="border-emerald-200" />
+                    <Input type="date" className="border-emerald-200 bg-white" />
+                    <Input type="date" className="border-emerald-200 bg-white" />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-emerald-700 mb-2">Number of Travelers</label>
-                  <Input type="number" placeholder="2" className="border-emerald-200" />
+                  <Input 
+                    type="number" 
+                    value={travelers} 
+                    onChange={(e) => setTravelers(e.target.value)} 
+                    min="1" 
+                    className="border-emerald-200 bg-white" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-emerald-700 mb-2">Budget Range</label>
-                  <select className="w-full p-2 border border-emerald-200 rounded-md">
+                  <select 
+                    value={budget} 
+                    onChange={(e) => setBudget(e.target.value)} 
+                    className="w-full p-2 border border-emerald-200 rounded-md bg-white text-emerald-900"
+                  >
                     <option>₹5,000 - ₹10,000</option>
                     <option>₹10,000 - ₹25,000</option>
                     <option>₹25,000 - ₹50,000</option>
@@ -517,16 +746,25 @@ function App() {
                   <label className="block text-sm font-medium text-emerald-700 mb-2">Interests</label>
                   <div className="grid grid-cols-2 gap-2">
                     {['Nature', 'Wildlife', 'Culture', 'Adventure', 'Photography', 'Spirituality'].map((interest) => (
-                      <label key={interest} className="flex items-center space-x-2">
-                        <input type="checkbox" className="text-emerald-600" />
-                        <span className="text-sm">{interest}</span>
+                      <label key={interest} className="flex items-center space-x-2 cursor-pointer bg-emerald-50/70 p-2 rounded border border-emerald-100 hover:bg-emerald-100/50">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedInterests.includes(interest)} 
+                          onChange={() => toggleInterest(interest)}
+                          className="text-emerald-600 rounded" 
+                        />
+                        <span className="text-sm font-medium text-emerald-800">{interest}</span>
                       </label>
                     ))}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-emerald-700 mb-2">Accommodation Type</label>
-                  <select className="w-full p-2 border border-emerald-200 rounded-md">
+                  <select 
+                    value={accommodation} 
+                    onChange={(e) => setAccommodation(e.target.value)}
+                    className="w-full p-2 border border-emerald-200 rounded-md bg-white text-emerald-900"
+                  >
                     <option>Budget Hotels</option>
                     <option>Eco Resorts</option>
                     <option>Luxury Hotels</option>
@@ -539,39 +777,92 @@ function App() {
             <div className="border-t border-emerald-100 pt-6">
               <h3 className="text-lg font-semibold text-emerald-800 mb-4">Additional Services</h3>
               <div className="grid md:grid-cols-2 gap-4">
-                <Card className="border-emerald-100">
+                <Card 
+                  onClick={() => setHasGuide(!hasGuide)} 
+                  className={`cursor-pointer transition-all border ${hasGuide ? 'border-emerald-600 bg-emerald-50/50' : 'border-emerald-100'}`}
+                >
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
                       <h4 className="font-medium text-emerald-800">Local Guide</h4>
                       <p className="text-sm text-emerald-600">Expert local guide for cultural insights</p>
-                      <p className="text-sm font-medium text-emerald-700">₹500/day</p>
+                      <p className="text-sm font-medium text-emerald-700 mt-1">₹500/day</p>
                     </div>
-                    <input type="checkbox" className="text-emerald-600" />
+                    <input 
+                      type="checkbox" 
+                      checked={hasGuide} 
+                      onChange={(e) => setHasGuide(e.target.checked)} 
+                      className="text-emerald-600 w-5 h-5 rounded" 
+                    />
                   </CardContent>
                 </Card>
-                <Card className="border-emerald-100">
+                <Card 
+                  onClick={() => setHasPhotographer(!hasPhotographer)} 
+                  className={`cursor-pointer transition-all border ${hasPhotographer ? 'border-emerald-600 bg-emerald-50/50' : 'border-emerald-100'}`}
+                >
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
                       <h4 className="font-medium text-emerald-800">Photographer</h4>
                       <p className="text-sm text-emerald-600">Professional photography service</p>
-                      <p className="text-sm font-medium text-emerald-700">₹1,500/day</p>
+                      <p className="text-sm font-medium text-emerald-700 mt-1">₹1,500/day</p>
                     </div>
-                    <input type="checkbox" className="text-emerald-600" />
+                    <input 
+                      type="checkbox" 
+                      checked={hasPhotographer} 
+                      onChange={(e) => setHasPhotographer(e.target.checked)} 
+                      className="text-emerald-600 w-5 h-5 rounded" 
+                    />
                   </CardContent>
                 </Card>
               </div>
             </div>
 
-            <Button className="w-full bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
+            <Button 
+              onClick={handleGenerate}
+              className="w-full py-6 text-base bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white shadow-md"
+            >
+              <Sparkles className="w-5 h-5 mr-2" />
               Generate AI Itinerary
             </Button>
           </CardContent>
         </Card>
+
+        {/* Generated Itinerary Output */}
+        {itinerary && (
+          <div className="space-y-4 animate-in fade-in-50 duration-500">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-emerald-900 flex items-center">
+                <CheckCircle2 className="w-6 h-6 mr-2 text-emerald-600" />
+                Custom Itinerary Generated for You
+              </h2>
+              <Badge className="bg-emerald-600 text-white">{travelers} Travelers • {budget}</Badge>
+            </div>
+            {itinerary.map((item, idx) => (
+              <Card key={idx} className="border-emerald-200 bg-white shadow-sm overflow-hidden">
+                <div className="bg-emerald-50 px-6 py-3 border-b border-emerald-100 flex items-center justify-between">
+                  <span className="font-bold text-emerald-800">{item.day}</span>
+                  <span className="text-sm font-medium text-emerald-600">{item.title}</span>
+                </div>
+                <CardContent className="p-6">
+                  <ul className="space-y-2">
+                    {item.activities.map((act, actIdx) => (
+                      <li key={actIdx} className="flex items-start text-emerald-950 text-sm">
+                        <ArrowRight className="w-4 h-4 mr-2 text-emerald-600 flex-shrink-0 mt-0.5" />
+                        <span>{act}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
+}
 
-  const CulturePage = () => (
+function CulturePage() {
+  return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-amber-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
@@ -580,31 +871,38 @@ function App() {
         </div>
 
         <Tabs defaultValue="crafts" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="crafts">Handicrafts</TabsTrigger>
-            <TabsTrigger value="culture">Tribal Culture</TabsTrigger>
-            <TabsTrigger value="food">Local Food</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 mb-8 bg-white border border-emerald-100">
+            <TabsTrigger value="crafts" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Handicrafts</TabsTrigger>
+            <TabsTrigger value="culture" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Tribal Culture</TabsTrigger>
+            <TabsTrigger value="food" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Local Food</TabsTrigger>
           </TabsList>
 
           <TabsContent value="crafts">
             <div className="grid md:grid-cols-3 gap-6">
               {culturalItems.map((item, index) => (
-                <Card key={index} className="border-emerald-100 overflow-hidden">
-                  <div className="h-48 relative">
-                    <ImageWithFallback
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
+                <Card key={index} className="border-emerald-100 overflow-hidden bg-white shadow-sm flex flex-col justify-between">
+                  <div>
+                    <div className="h-48 relative">
+                      <ImageWithFallback
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold text-emerald-800 mb-2">{item.name}</h3>
+                      <p className="text-emerald-600 mb-3 text-sm">{item.description}</p>
+                      <p className="text-lg font-bold text-amber-700">{item.price}</p>
+                    </CardContent>
                   </div>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-emerald-800 mb-2">{item.name}</h3>
-                    <p className="text-emerald-600 mb-3">{item.description}</p>
-                    <p className="text-lg font-bold text-amber-700">{item.price}</p>
-                    <Button className="w-full mt-4 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
-                      Learn More
+                  <div className="px-6 pb-6">
+                    <Button 
+                      onClick={() => alert(`Inquiring about ${item.name}. Local artisans contacted!`)}
+                      className="w-full bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white"
+                    >
+                      Learn More / Buy
                     </Button>
-                  </CardContent>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -612,7 +910,7 @@ function App() {
 
           <TabsContent value="culture">
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="border-emerald-100">
+              <Card className="border-emerald-100 bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-emerald-800">Tribal Communities</CardTitle>
                 </CardHeader>
@@ -620,21 +918,21 @@ function App() {
                   <div className="space-y-4">
                     <div className="p-4 bg-emerald-50 rounded-lg">
                       <h4 className="font-semibold text-emerald-800">Santhal Tribe</h4>
-                      <p className="text-emerald-600 text-sm">Known for their vibrant festivals and traditional dances</p>
+                      <p className="text-emerald-600 text-sm">Known for their vibrant festivals, musical instruments, and traditional dances</p>
                     </div>
                     <div className="p-4 bg-amber-50 rounded-lg">
                       <h4 className="font-semibold text-amber-800">Oraon Tribe</h4>
-                      <p className="text-amber-600 text-sm">Famous for their agricultural practices and folk music</p>
+                      <p className="text-amber-600 text-sm">Famous for their agricultural practices, nature worship, and Karam folk music</p>
                     </div>
                     <div className="p-4 bg-emerald-50 rounded-lg">
                       <h4 className="font-semibold text-emerald-800">Munda Tribe</h4>
-                      <p className="text-emerald-600 text-sm">Renowned for their traditional crafts and warrior heritage</p>
+                      <p className="text-emerald-600 text-sm">Renowned for their traditional crafts, brass works, and Birsa Munda heritage</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="border-emerald-100">
+              <Card className="border-emerald-100 bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-emerald-800">Cultural Experiences</CardTitle>
                 </CardHeader>
@@ -643,23 +941,23 @@ function App() {
                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-amber-50 rounded-lg">
                       <div>
                         <h4 className="font-semibold text-emerald-800">Village Homestay</h4>
-                        <p className="text-emerald-600 text-sm">Live with tribal families</p>
+                        <p className="text-emerald-600 text-sm">Live with welcoming tribal families</p>
                       </div>
-                      <Badge>₹800/night</Badge>
+                      <Badge className="bg-emerald-600 text-white">₹800/night</Badge>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-emerald-50 rounded-lg">
                       <div>
                         <h4 className="font-semibold text-emerald-800">Traditional Dance Show</h4>
-                        <p className="text-emerald-600 text-sm">Cultural performances</p>
+                        <p className="text-emerald-600 text-sm">Cultural performances & music</p>
                       </div>
-                      <Badge>₹200/person</Badge>
+                      <Badge className="bg-amber-600 text-white">₹200/person</Badge>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-amber-50 rounded-lg">
                       <div>
                         <h4 className="font-semibold text-emerald-800">Craft Workshop</h4>
-                        <p className="text-emerald-600 text-sm">Learn traditional arts</p>
+                        <p className="text-emerald-600 text-sm">Learn traditional Sohrai painting</p>
                       </div>
-                      <Badge>₹500/session</Badge>
+                      <Badge className="bg-emerald-600 text-white">₹500/session</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -669,61 +967,32 @@ function App() {
 
           <TabsContent value="food">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="border-emerald-100">
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-lg font-semibold text-emerald-800 mb-2">Dhuska</h3>
-                  <p className="text-emerald-600 text-sm mb-3">Traditional fried bread made with rice and lentils</p>
-                  <p className="text-lg font-bold text-amber-700">₹20 - ₹40</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-emerald-100">
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-lg font-semibold text-emerald-800 mb-2">Ghugni</h3>
-                  <p className="text-emerald-600 text-sm mb-3">Spicy black gram curry with traditional spices</p>
-                  <p className="text-lg font-bold text-amber-700">₹30 - ₹60</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-emerald-100">
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-lg font-semibold text-emerald-800 mb-2">Tribal Thali</h3>
-                  <p className="text-emerald-600 text-sm mb-3">Complete meal with local vegetables and rice</p>
-                  <p className="text-lg font-bold text-amber-700">₹150 - ₹300</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-emerald-100">
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-lg font-semibold text-emerald-800 mb-2">Handia</h3>
-                  <p className="text-emerald-600 text-sm mb-3">Traditional rice beer of tribal communities</p>
-                  <p className="text-lg font-bold text-amber-700">₹50 - ₹100</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-emerald-100">
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-lg font-semibold text-emerald-800 mb-2">Bamboo Shoot Curry</h3>
-                  <p className="text-emerald-600 text-sm mb-3">Seasonal delicacy with unique forest flavors</p>
-                  <p className="text-lg font-bold text-amber-700">₹80 - ₹150</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-emerald-100">
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-lg font-semibold text-emerald-800 mb-2">Rugra</h3>
-                  <p className="text-emerald-600 text-sm mb-3">Wild mushroom curry with aromatic herbs</p>
-                  <p className="text-lg font-bold text-amber-700">₹120 - ₹200</p>
-                </CardContent>
-              </Card>
+              {[
+                { name: "Dhuska", desc: "Crispy fried bread made of fermented rice and chana dal batter.", price: "₹20 - ₹40" },
+                { name: "Ghugni", desc: "Spicy and tangy black gram curry prepared with local spices.", price: "₹30 - ₹60" },
+                { name: "Tribal Thali", desc: "Nutritious meal with red rice, kurthi dal, and seasonal saag.", price: "₹150 - ₹300" },
+                { name: "Handia", desc: "Traditional cooling fermented rice beverage of tribal communities.", price: "₹50 - ₹100" },
+                { name: "Bamboo Shoot Curry", desc: "Forest delicacy (Karil) cooked with savory mustard paste.", price: "₹80 - ₹150" },
+                { name: "Rugra", desc: "Wild seasonal forest mushroom delicacy prized for delicious texture.", price: "₹120 - ₹200" }
+              ].map((dish, i) => (
+                <Card key={i} className="border-emerald-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6 text-center">
+                    <h3 className="text-lg font-semibold text-emerald-800 mb-2">{dish.name}</h3>
+                    <p className="text-emerald-600 text-sm mb-3">{dish.desc}</p>
+                    <p className="text-lg font-bold text-amber-700">{dish.price}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </TabsContent>
         </Tabs>
       </div>
     </div>
   );
+}
 
-  const EventsPage = () => (
+function EventsPage() {
+  return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-amber-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
@@ -734,9 +1003,9 @@ function App() {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             {events.map((event) => (
-              <Card key={event.id} className="border-emerald-100">
+              <Card key={event.id} className="border-emerald-100 bg-white shadow-sm hover:shadow-md transition-all">
                 <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center mb-2">
                         <Badge className="bg-emerald-100 text-emerald-800 mr-2">
@@ -745,14 +1014,17 @@ function App() {
                         <span className="text-sm text-emerald-600">{event.location}</span>
                       </div>
                       <h3 className="text-xl font-bold text-emerald-800 mb-2">{event.title}</h3>
-                      <p className="text-emerald-600 mb-3">{event.description}</p>
+                      <p className="text-emerald-600 mb-3 text-sm">{event.description}</p>
                       <p className="text-sm font-medium text-amber-700 flex items-center">
                         <Calendar className="w-4 h-4 mr-1" />
                         {event.date}
                       </p>
                     </div>
-                    <Button className="bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
-                      Book Now
+                    <Button 
+                      onClick={() => alert(`Pass booked for ${event.title}! Confirmation sent.`)}
+                      className="bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white whitespace-nowrap"
+                    >
+                      Book Pass
                     </Button>
                   </div>
                 </CardContent>
@@ -761,19 +1033,20 @@ function App() {
           </div>
 
           <div>
-            <Card className="border-emerald-100 mb-6">
+            <Card className="border-emerald-100 mb-6 bg-white shadow-sm">
               <CardHeader>
                 <CardTitle className="text-emerald-800">Event Calendar</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="bg-emerald-50 rounded-lg p-6 text-center">
                   <Calendar className="w-12 h-12 text-emerald-600 mx-auto mb-3" />
-                  <p className="text-emerald-700">Interactive calendar coming soon with all events and festivals</p>
+                  <p className="text-emerald-800 font-medium">Seasonal Calendar 2025-2026</p>
+                  <p className="text-emerald-600 text-xs mt-1">Upcoming festivals and registration dates are updated weekly.</p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-emerald-100">
+            <Card className="border-emerald-100 bg-white shadow-sm">
               <CardHeader>
                 <CardTitle className="text-emerald-800">Upcoming Highlights</CardTitle>
               </CardHeader>
@@ -781,15 +1054,15 @@ function App() {
                 <div className="space-y-3">
                   <div className="p-3 bg-gradient-to-r from-emerald-50 to-amber-50 rounded-lg">
                     <h4 className="font-medium text-emerald-800">Sarhul Festival</h4>
-                    <p className="text-xs text-emerald-600">March 15 - Nature worship celebration</p>
+                    <p className="text-xs text-emerald-600">March 15 - Nature worship celebration with sal blossoms</p>
                   </div>
                   <div className="p-3 bg-gradient-to-r from-amber-50 to-emerald-50 rounded-lg">
-                    <h4 className="font-medium text-amber-800">Photography Contest</h4>
-                    <p className="text-xs text-amber-600">April 10 - Wildlife photography</p>
+                    <h4 className="font-medium text-amber-800">Betla Safari Workshop</h4>
+                    <p className="text-xs text-amber-600">April 10 - Wildlife photography expedition</p>
                   </div>
                   <div className="p-3 bg-gradient-to-r from-emerald-50 to-amber-50 rounded-lg">
-                    <h4 className="font-medium text-emerald-800">Cultural Fair</h4>
-                    <p className="text-xs text-emerald-600">May 20 - Tribal art exhibition</p>
+                    <h4 className="font-medium text-emerald-800">Sohrai Art Expo</h4>
+                    <p className="text-xs text-emerald-600">May 20 - Tribal indigenous art exhibition</p>
                   </div>
                 </div>
               </CardContent>
@@ -799,8 +1072,76 @@ function App() {
       </div>
     </div>
   );
+}
 
-  const CommunityPage = () => (
+function CommunityPage() {
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      author: "Raj Kumar",
+      initials: "RK",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+      time: "2 hours ago",
+      text: "Just visited Hundru Falls and it was absolutely breathtaking! The 320-foot drop is incredible. Water volume is high and the scenic road from Ranchi is very smooth.",
+      images: [
+        "https://images.unsplash.com/photo-1675296321708-2971a2fbd7e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxKaGFya2hhbmQlMjB3YXRlcmZhbGwlMjBuYXR1cmUlMjBzY2VuaWN8ZW58MXx8fHwxNzU3NzkyNTM2fDA&ixlib=rb-4.1.0&q=80&w=300",
+        "https://windows10spotlight.com/wp-content/uploads/2023/10/30d0282629f494794b3f9588c00a632e-1024x576.jpg"
+      ],
+      likes: 24,
+      comments: 8,
+      liked: false
+    },
+    {
+      id: 2,
+      author: "Priya Sharma",
+      initials: "PS",
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b884?w=40&h=40&fit=crop&crop=face",
+      time: "5 hours ago",
+      text: "Attended the Sarhul festival celebration near Ranchi. The cultural performances and traditional dhuska were amazing! The local people welcomed us with open hearts.",
+      images: [],
+      likes: 18,
+      comments: 5,
+      liked: false
+    }
+  ]);
+
+  const [newPostText, setNewPostText] = useState('');
+
+  const handleLike = (id: number) => {
+    setPosts((prev) =>
+      prev.map((post) => {
+        if (post.id === id) {
+          return {
+            ...post,
+            likes: post.liked ? post.likes - 1 : post.likes + 1,
+            liked: !post.liked
+          };
+        }
+        return post;
+      })
+    );
+  };
+
+  const handleCreatePost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPostText.trim()) return;
+    const newEntry = {
+      id: Date.now(),
+      author: "You (Traveler)",
+      initials: "ME",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=40&h=40&fit=crop&crop=face",
+      time: "Just now",
+      text: newPostText,
+      images: [],
+      likes: 1,
+      comments: 0,
+      liked: true
+    };
+    setPosts([newEntry, ...posts]);
+    setNewPostText('');
+  };
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-amber-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
@@ -810,166 +1151,129 @@ function App() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* Sample community posts */}
-            <Card className="border-emerald-100">
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-3">
-                  <Avatar>
-                    <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" />
-                    <AvatarFallback>RK</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-emerald-800">Raj Kumar</h4>
-                      <span className="text-xs text-emerald-600">2 hours ago</span>
-                    </div>
-                    <p className="text-emerald-700 mb-3">Just visited Hundru Falls and it was absolutely breathtaking! The 320-foot drop is incredible during monsoon season. Here are some tips for fellow travelers...</p>
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      <ImageWithFallback
-                        src="https://images.unsplash.com/photo-1675296321708-2971a2fbd7e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxKaGFya2hhbmQlMjB3YXRlcmZhbGwlMjBuYXR1cmUlMjBzY2VuaWN8ZW58MXx8fHwxNzU3NzkyNTM2fDA&ixlib=rb-4.1.0&q=80&w=300"
-                        alt="Hundru Falls"
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <ImageWithFallback
-                        src="https://images.unsplash.com/photo-1675296321708-2971a2fbd7e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxKaGFya2hhbmQlMjB3YXRlcmZhbGwlMjBuYXR1cmUlMjBzY2VuaWN8ZW58MXx8fHwxNzU3NzkyNTM2fDA&ixlib=rb-4.1.0&q=80&w=300"
-                        alt="Hundru Falls"
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <Button variant="ghost" size="sm" className="text-emerald-600">
-                        <Heart className="w-4 h-4 mr-1" />
-                        24
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-emerald-600">
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        8
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {posts.map((post) => (
+              <Card key={post.id} className="border-emerald-100 bg-white shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-3">
+                    <Avatar>
+                      <AvatarImage src={post.avatar} />
+                      <AvatarFallback>{post.initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-emerald-800">{post.author}</h4>
+                        <span className="text-xs text-emerald-600">{post.time}</span>
+                      </div>
+                      <p className="text-emerald-950 mb-3 text-sm leading-relaxed">{post.text}</p>
+                      
+                      {post.images.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          {post.images.map((img, idx) => (
+                            <ImageWithFallback
+                              key={idx}
+                              src={img}
+                              alt="Post media"
+                              className="w-full h-36 object-cover rounded-lg"
+                            />
+                          ))}
+                        </div>
+                      )}
 
-            <Card className="border-emerald-100">
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-3">
-                  <Avatar>
-                    <AvatarImage src="https://images.unsplash.com/photo-1494790108755-2616b612b884?w=40&h=40&fit=crop&crop=face" />
-                    <AvatarFallback>PS</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-emerald-800">Priya Sharma</h4>
-                      <span className="text-xs text-emerald-600">5 hours ago</span>
-                    </div>
-                    <p className="text-emerald-700 mb-3">Attended the Sarhul festival in a tribal village near Ranchi. The cultural performances and traditional food were amazing! The community was so welcoming.</p>
-                    <div className="flex items-center space-x-4">
-                      <Button variant="ghost" size="sm" className="text-emerald-600">
-                        <Heart className="w-4 h-4 mr-1" />
-                        18
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-emerald-600">
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        5
-                      </Button>
+                      <div className="flex items-center space-x-4 pt-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleLike(post.id)}
+                          className={post.liked ? "text-red-500 hover:text-red-600" : "text-emerald-600 hover:text-emerald-700"}
+                        >
+                          <Heart className={`w-4 h-4 mr-1 ${post.liked ? 'fill-current' : ''}`} />
+                          {post.likes}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-emerald-600">
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          {post.comments}
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-emerald-100">
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-3">
-                  <Avatar>
-                    <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" />
-                    <AvatarFallback>AM</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-emerald-800">Arun Mishra</h4>
-                      <span className="text-xs text-emerald-600">1 day ago</span>
-                    </div>
-                    <p className="text-emerald-700 mb-3">Tiger spotting at Betla National Park! After two days of patience, finally saw a magnificent tiger near the watering hole. Best wildlife experience ever!</p>
-                    <div className="flex items-center space-x-4">
-                      <Button variant="ghost" size="sm" className="text-emerald-600">
-                        <Heart className="w-4 h-4 mr-1" />
-                        42
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-emerald-600">
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        12
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           <div className="space-y-6">
-            <Card className="border-emerald-100">
+            <Card className="border-emerald-100 bg-white shadow-sm">
               <CardHeader>
                 <CardTitle className="text-emerald-800">Share Your Experience</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <form onSubmit={handleCreatePost} className="space-y-4">
                   <textarea
-                    placeholder="Share your travel experience..."
-                    className="w-full p-3 border border-emerald-200 rounded-lg resize-none"
+                    placeholder="Share your travel experience, tips or memories..."
+                    value={newPostText}
+                    onChange={(e) => setNewPostText(e.target.value)}
+                    className="w-full p-3 border border-emerald-200 rounded-lg resize-none text-sm focus:outline-emerald-600"
                     rows={4}
                   />
                   <div className="flex items-center justify-between">
-                    <Button variant="outline" size="sm" className="border-emerald-600 text-emerald-600">
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => alert("Upload photo dialog: You can attach travel pictures.")}
+                      className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                    >
                       <Camera className="w-4 h-4 mr-1" />
-                      Add Photos
+                      Add Photo
                     </Button>
-                    <Button className="bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
-                      Share
+                    <Button 
+                      type="submit"
+                      disabled={!newPostText.trim()}
+                      className="bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white"
+                    >
+                      Share Post
                     </Button>
                   </div>
-                </div>
+                </form>
               </CardContent>
             </Card>
 
-            <Card className="border-emerald-100">
+            <Card className="border-emerald-100 bg-white shadow-sm">
               <CardHeader>
                 <CardTitle className="text-emerald-800">Trending Destinations</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-emerald-700">#HundruFalls</span>
+                    <span className="text-emerald-700 font-medium">#HundruFalls</span>
                     <Badge variant="secondary">127 posts</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-emerald-700">#NetarhatSunset</span>
+                    <span className="text-emerald-700 font-medium">#NetarhatSunset</span>
                     <Badge variant="secondary">94 posts</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-emerald-700">#BetalWildlife</span>
+                    <span className="text-emerald-700 font-medium">#BetlaWildlife</span>
                     <Badge variant="secondary">68 posts</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-emerald-700">#TribalCulture</span>
+                    <span className="text-emerald-700 font-medium">#BaidyanathDham</span>
                     <Badge variant="secondary">52 posts</Badge>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-emerald-100">
+            <Card className="border-emerald-100 bg-white shadow-sm">
               <CardHeader>
                 <CardTitle className="text-emerald-800">Community Guidelines</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-sm text-emerald-600 space-y-2">
-                  <p>• Be respectful to local communities</p>
-                  <p>• Share authentic experiences</p>
-                  <p>• Follow eco-friendly practices</p>
-                  <p>• Help fellow travelers</p>
-                  <p>• Report inappropriate content</p>
+                <div className="text-sm text-emerald-700 space-y-2">
+                  <p>• Be respectful to local tribal traditions</p>
+                  <p>• Share authentic, high-quality tips</p>
+                  <p>• Follow eco-friendly & zero plastic practices</p>
+                  <p>• Support local guides and handicrafts</p>
                 </div>
               </CardContent>
             </Card>
@@ -978,30 +1282,76 @@ function App() {
       </div>
     </div>
   );
+}
 
-  const AuthPage = () => (
+function AuthPage() {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setStatusMessage('Please enter both email and password.');
+      return;
+    }
+    setStatusMessage(isSignUp ? 'Account created! Welcome to Jharkhand Tourism.' : 'Signed in successfully! Welcome back.');
+  };
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-amber-50 flex items-center justify-center py-8">
       <div className="max-w-md w-full mx-4">
-        <Card className="border-emerald-100">
+        <Card className="border-emerald-100 bg-white shadow-lg">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Globe className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
+              <Globe className="w-8 h-8" />
             </div>
-            <CardTitle className="text-2xl font-bold text-emerald-800">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your Jharkhand Tourism account</CardDescription>
+            <CardTitle className="text-2xl font-bold text-emerald-800">
+              {isSignUp ? 'Create an Account' : 'Welcome Back'}
+            </CardTitle>
+            <CardDescription>
+              {isSignUp 
+                ? 'Register to plan and book your Jharkhand adventures' 
+                : 'Sign in to your Jharkhand Tourism account'}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-emerald-700 mb-2">Email</label>
-              <Input type="email" placeholder="your@email.com" className="border-emerald-200" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-emerald-700 mb-2">Password</label>
-              <Input type="password" placeholder="••••••••" className="border-emerald-200" />
-            </div>
-            <Button className="w-full bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
-              Sign In
-            </Button>
+            {statusMessage && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-lg text-center">
+                {statusMessage}
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-emerald-700 mb-2">Email</label>
+                <Input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com" 
+                  className="border-emerald-200 bg-white" 
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-emerald-700 mb-2">Password</label>
+                <Input 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••" 
+                  className="border-emerald-200 bg-white" 
+                  required
+                />
+              </div>
+              <Button 
+                type="submit"
+                className="w-full bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white"
+              >
+                {isSignUp ? 'Sign Up' : 'Sign In'}
+              </Button>
+            </form>
             
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -1012,122 +1362,215 @@ function App() {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+            <Button 
+              type="button"
+              variant="outline" 
+              onClick={() => alert("Google Single Sign-On initiated.")}
+              className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+            >
               Continue with Google
             </Button>
-            <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-              Continue with Phone
-            </Button>
 
-            <div className="text-center text-sm">
-              <span className="text-emerald-600">Don't have an account? </span>
-              <button className="text-emerald-700 font-medium hover:text-emerald-800">Sign up</button>
+            <div className="text-center text-sm pt-2">
+              <span className="text-emerald-600">
+                {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+              </span>
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setStatusMessage('');
+                }}
+                className="text-emerald-700 font-semibold hover:text-emerald-800 underline"
+              >
+                {isSignUp ? 'Sign in' : 'Sign up'}
+              </button>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
   );
+}
 
-  // Floating Emergency SOS Button
-  const SOSButton = () => (
+function SOSButton() {
+  return (
     <div className="fixed bottom-4 left-4 z-50">
       <Dialog>
         <DialogTrigger asChild>
-          <Button className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg animate-pulse">
-            <AlertTriangle className="w-6 h-6" />
+          <Button 
+            className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-xl animate-pulse flex items-center justify-center p-0"
+            title="Emergency Tourist Assistance"
+          >
+            <AlertTriangle className="w-7 h-7" />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-red-800 flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2" />
-              Emergency SOS
+              Emergency Tourist SOS
             </DialogTitle>
             <DialogDescription>
-              Get immediate help and emergency contacts for tourists
+              Direct contact numbers for 24/7 tourist safety and emergency response
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="p-4 bg-red-50 rounded-lg">
+            <div className="p-4 bg-red-50 rounded-lg border border-red-100">
               <h4 className="font-semibold text-red-800 mb-2">Emergency Contacts</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>Tourist Helpline:</span>
-                  <a href="tel:1363" className="text-red-700 font-medium">1363</a>
+                <div className="flex items-center justify-between p-2 bg-white rounded border border-red-100">
+                  <span className="font-medium text-gray-800">Tourist Helpline:</span>
+                  <a href="tel:1363" className="text-red-700 font-bold hover:underline">1363 (Toll Free)</a>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>Police:</span>
-                  <a href="tel:100" className="text-red-700 font-medium">100</a>
+                <div className="flex items-center justify-between p-2 bg-white rounded border border-red-100">
+                  <span className="font-medium text-gray-800">Police Emergency:</span>
+                  <a href="tel:100" className="text-red-700 font-bold hover:underline">100 / 112</a>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>Medical Emergency:</span>
-                  <a href="tel:108" className="text-red-700 font-medium">108</a>
+                <div className="flex items-center justify-between p-2 bg-white rounded border border-red-100">
+                  <span className="font-medium text-gray-800">Medical Ambulance:</span>
+                  <a href="tel:108" className="text-red-700 font-bold hover:underline">108</a>
                 </div>
               </div>
             </div>
-            <Button className="w-full bg-red-600 hover:bg-red-700">
-              <Phone className="w-4 h-4 mr-2" />
-              Call Emergency Services
-            </Button>
+            <a href="tel:1363" className="block w-full">
+              <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-6">
+                <Phone className="w-5 h-5 mr-2" />
+                Call Tourist Helpline (1363)
+              </Button>
+            </a>
           </div>
         </DialogContent>
       </Dialog>
     </div>
   );
+}
 
-  // Floating Chatbot
-  const ChatBot = () => (
+interface ChatBotProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+function ChatBot({ open, setOpen }: ChatBotProps) {
+  const [messages, setMessages] = useState([
+    {
+      sender: "bot",
+      text: "Hello! I'm your Jharkhand Tourism Assistant. Ask me anything about destinations, waterfalls, Betla safari, local food, or travel tips!"
+    }
+  ]);
+  const [inputVal, setInputVal] = useState('');
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputVal.trim()) return;
+
+    const userText = inputVal;
+    setInputVal('');
+    setMessages((prev) => [...prev, { sender: "user", text: userText }]);
+
+    // Intelligent auto-responder for Jharkhand topics
+    setTimeout(() => {
+      const q = userText.toLowerCase();
+      let reply = "Jharkhand has marvelous places! Explore Netarhat for sunsets, Hundru and Dassam falls for nature, Betla for wildlife, and Deoghar for spiritual heritage.";
+      
+      if (q.includes("netarhat") || q.includes("sunset")) {
+        reply = "Netarhat ('Queen of Chotanagpur') is 156 km from Ranchi. Don't miss Magnolia Point sunset and sunrise point. Best time to visit is October to March!";
+      } else if (q.includes("waterfall") || q.includes("fall") || q.includes("hundru")) {
+        reply = "Hundru Falls (320 ft), Jonha Falls, and Dassam Falls are all within 45 km of Ranchi. Monsoon and post-monsoon (July to February) are the best months.";
+      } else if (q.includes("betla") || q.includes("animal") || q.includes("tiger") || q.includes("wildlife")) {
+        reply = "Betla National Park in Palamau is home to elephants, tigers, sambar deer, and the ancient Palamau Fort. Morning safaris start around 6:00 AM.";
+      } else if (q.includes("food") || q.includes("eat") || q.includes("dhuska")) {
+        reply = "Must-try authentic foods include Dhuska with spicy Ghugni, Arsa Roti, Chilka Roti, Rugra mushroom curry, and bamboo shoot delicacies!";
+      } else if (q.includes("temple") || q.includes("deoghar") || q.includes("baidyanath")) {
+        reply = "Baba Baidyanath Temple in Deoghar is one of the 12 sacred Jyotirlingas. It attracts millions during the holy Shravani Mela.";
+      }
+
+      setMessages((prev) => [...prev, { sender: "bot", text: reply }]);
+    }, 500);
+  };
+
+  return (
     <div className="fixed bottom-4 right-4 z-50">
-      <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white shadow-lg">
-            <MessageCircle className="w-6 h-6" />
+          <Button 
+            className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white shadow-xl flex items-center justify-center p-0"
+            title="Chat with Tourism Assistant"
+          >
+            <MessageCircle className="w-7 h-7" />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-emerald-800 flex items-center">
               <MessageCircle className="w-5 h-5 mr-2" />
-              Tourism Assistant
+              Jharkhand Tourism AI Guide
             </DialogTitle>
             <DialogDescription>
-              Ask me about destinations, bookings, or travel tips (English, Hindi, and local languages supported)
+              Ask questions about places, routes, tribal culture, or local food
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="h-64 bg-emerald-50 rounded-lg p-4 overflow-y-auto">
-              <div className="space-y-3">
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <p className="text-sm text-emerald-800">Hello! I'm your Jharkhand tourism assistant. How can I help you today?</p>
+            <div className="h-72 bg-emerald-50/50 rounded-lg p-4 overflow-y-auto space-y-3 border border-emerald-100">
+              {messages.map((m, idx) => (
+                <div 
+                  key={idx} 
+                  className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div 
+                    className={`max-w-[85%] p-3 rounded-xl text-sm ${
+                      m.sender === 'user' 
+                        ? 'bg-gradient-to-r from-emerald-600 to-amber-600 text-white' 
+                        : 'bg-white text-emerald-950 shadow-sm border border-emerald-100'
+                    }`}
+                  >
+                    {m.text}
+                  </div>
                 </div>
-                <div className="bg-emerald-600 text-white p-3 rounded-lg ml-8">
-                  <p className="text-sm">Tell me about Netarhat</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <p className="text-sm text-emerald-800">Netarhat is known as the "Queen of Chotanagpur" and is famous for its stunning sunrises and sunsets. The best time to visit is October to March. Would you like information about accommodations or how to reach there?</p>
-                </div>
-              </div>
+              ))}
             </div>
-            <div className="flex space-x-2">
-              <Input placeholder="Type your message..." className="border-emerald-200" />
-              <Button className="bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700">
-                Send
+            <form onSubmit={handleSend} className="flex space-x-2">
+              <Input 
+                placeholder="Ask about Netarhat, Hundru, Betla..." 
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                className="border-emerald-200 bg-white" 
+              />
+              <Button 
+                type="submit"
+                className="bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white"
+              >
+                <Send className="w-4 h-4" />
               </Button>
-            </div>
-            <div className="text-xs text-emerald-600 text-center">
-              Available in English, Hindi, and Santhali
+            </form>
+            <div className="text-xs text-emerald-700 text-center font-medium">
+              English • Hindi • Santhali tourism tips available
             </div>
           </div>
         </DialogContent>
       </Dialog>
     </div>
   );
+}
 
-  const renderPage = () => {
+/* --- MAIN APP COMPONENT --- */
+
+function App() {
+  const [currentPage, setCurrentPage] = useState('home');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const renderCurrentPage = () => {
     switch (currentPage) {
       case 'destinations':
-        return <DestinationsPage />;
+        return (
+          <DestinationsPage 
+            searchQuery={searchQuery} 
+            setSearchQuery={setSearchQuery} 
+            setCurrentPage={setCurrentPage} 
+          />
+        );
       case 'virtual-tours':
         return <VirtualToursPage />;
       case 'trip-planner':
@@ -1141,16 +1584,72 @@ function App() {
       case 'auth':
         return <AuthPage />;
       default:
-        return <HomePage />;
+        return (
+          <HomePage 
+            searchQuery={searchQuery} 
+            setSearchQuery={setSearchQuery} 
+            setCurrentPage={setCurrentPage} 
+          />
+        );
     }
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      {renderPage()}
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col justify-between">
+      <div>
+        <Header 
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
+        <main>{renderCurrentPage()}</main>
+      </div>
+
+      {/* Floating Utilities */}
       <SOSButton />
-      <ChatBot />
+      <ChatBot open={chatbotOpen} setOpen={setChatbotOpen} />
+
+      {/* Modern Footer */}
+      <footer className="bg-emerald-950 text-white py-12 px-4 mt-16 border-t border-emerald-900">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <div className="flex items-center space-x-2 mb-4">
+              <img src="/logo1.png" alt="App Logo" className="w-8 h-8 rounded object-contain bg-white/10 p-1" />
+              <span className="text-xl font-bold text-white">Jh Tourism</span>
+            </div>
+            <p className="text-emerald-300 text-sm">
+              Discover the untouched hills, cascading waterfalls, and rich tribal heritage of Jharkhand.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-semibold text-white mb-3">Quick Links</h4>
+            <ul className="space-y-2 text-sm text-emerald-300">
+              <li><button onClick={() => setCurrentPage('destinations')} className="hover:text-white">Destinations</button></li>
+              <li><button onClick={() => setCurrentPage('virtual-tours')} className="hover:text-white">Virtual Tours</button></li>
+              <li><button onClick={() => setCurrentPage('trip-planner')} className="hover:text-white">AI Trip Planner</button></li>
+              <li><button onClick={() => setCurrentPage('culture')} className="hover:text-white">Local Culture</button></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-white mb-3">Helplines</h4>
+            <ul className="space-y-2 text-sm text-emerald-300">
+              <li>Tourist Helpline: <a href="tel:1363" className="text-amber-400 font-semibold">1363</a></li>
+              <li>Emergency Services: <a href="tel:112" className="text-amber-400 font-semibold">112</a></li>
+              <li>Jharkhand Tourism Board, Ranchi</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-white mb-3">Responsible Tourism</h4>
+            <p className="text-emerald-300 text-sm">
+              Preserving nature, respecting tribal culture, and promoting eco-friendly travel across Jharkhand.
+            </p>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto border-t border-emerald-900 mt-8 pt-6 text-center text-xs text-emerald-400">
+          © {new Date().getFullYear()} Jharkhand Tourism. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 }
